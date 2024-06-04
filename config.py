@@ -1,5 +1,5 @@
 """ Twitter Login Info"""
-credentials = {
+credential_dict = {
     'username':'',
     'password':''
 }

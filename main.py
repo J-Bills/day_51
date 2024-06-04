@@ -1,7 +1,10 @@
-import config
+from config import credential_dict
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+
+PROMISED_DOWN_SPEED = 100
+PROMISED_UP_SPEED = 13
 class InternetSpeedTwitterBot:
     
     def __init__(self) -> None:
@@ -11,6 +14,7 @@ class InternetSpeedTwitterBot:
         self.driver = webdriver.Chrome(options=self.chrome_options)
         self.down = 0
         self.up = 0
+        self.scammed = None
         
     def get_internet_speed(self):
         self.driver.get('https://www.speedtest.net')
@@ -19,17 +23,26 @@ class InternetSpeedTwitterBot:
         self.driver.implicitly_wait(15)
         self.driver.find_element(By.CLASS_NAME,value='notification-dismiss').click()
         results = self.driver.find_elements(By.XPATH,value='//span(contains[@class, "-large number.result-data-value.download-speed"])')
-        self.down = results[0]
-        self.up = results[1]
-        
+        self.down = float(results[0])
+        self.up = float(results[1])
+        if self.down <= PROMISED_DOWN_SPEED and self.up <= PROMISED_UP_SPEED:
+            self.scammed = True
     
-    # def tweet_at_provider(self):
-    #     self.driver.get('https://x.com')
-    #     self.driver.find_element(By.XPATH, value="//a(contains[@href, '/login'])").click()
-    #     self.driver.implicitly_wait(5)
-    #     self.driver.find_element(By.NAME, value='text').send_keys()
+    def tweet_at_provider(self):
+        self.driver.get('https://x.com')
+        self.driver.find_element(By.XPATH, value="//a(contains[@href, '/login'])").click()
+        self.driver.implicitly_wait(5)
+        self.driver.find_element(By.NAME, value='username').send_keys(credential_dict.get('username'))
+        self.driver.find_element(By.XPATH, value="//span[text()='Next']//ancestor::button").click()
+        self.driver.implicitly_wait(2)
+        self.driver.find_element(By.NAME, value='password').send_keys(credential_dict.get('password'))
+        self.driver.find_element(By.XPATH, value="//span[text()='Log in']//ancestor::button").click()
+        
         
 def main():
     bot = InternetSpeedTwitterBot()
     bot.get_internet_speed()
-    bot.tweet_at_provider()
+    if (bot.scammed):
+        bot.tweet_at_provider()
+    else:
+        print('Not Scammed')
