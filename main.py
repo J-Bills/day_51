@@ -15,6 +15,7 @@ class InternetSpeedTwitterBot:
         self.down = 0
         self.up = 0
         self.scammed = None
+        self.speed_tweet = f"Hey Internet Provider, why is my internet speed {self.down} down/{self.up} up when I pay for {PROMISED_DOWN_SPEED} down/{PROMISED_UP_SPEED} up?"
         
     def get_internet_speed(self):
         self.driver.get('https://www.speedtest.net')
@@ -29,6 +30,7 @@ class InternetSpeedTwitterBot:
             self.scammed = True
     
     def tweet_at_provider(self):
+        #Logging In
         self.driver.get('https://x.com')
         self.driver.find_element(By.XPATH, value="//a(contains[@href, '/login'])").click()
         self.driver.implicitly_wait(5)
@@ -37,7 +39,11 @@ class InternetSpeedTwitterBot:
         self.driver.implicitly_wait(2)
         self.driver.find_element(By.NAME, value='password').send_keys(credential_dict.get('password'))
         self.driver.find_element(By.XPATH, value="//span[text()='Log in']//ancestor::button").click()
+        self.driver.implicitly_wait(10)
         
+        #sending the tweet
+        self.driver.find_element(By.XPATH, value="//div(contains[@role, 'textbox'])").send_keys(self.speed_tweet)
+        self.driver.find_element(By.XPATH, value="//span[text()='Post']//ancestor::button").click()
         
 def main():
     bot = InternetSpeedTwitterBot()
